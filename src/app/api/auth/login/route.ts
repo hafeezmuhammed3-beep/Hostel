@@ -43,10 +43,10 @@ export async function POST(request: Request) {
         });
 
         return NextResponse.json({ success: true, user: { name: user.name, role: user.role } });
-    } catch (error) {
-        console.error("Login error:", error);
+    } catch (error: any) {
+        console.error("Login error details:", error);
         return NextResponse.json(
-            { error: "Something went wrong" },
+            { error: error.message || "Something went wrong" },
             { status: 500 }
         );
     }
