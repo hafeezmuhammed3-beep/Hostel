@@ -1,23 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { decrypt } from "@/lib/auth";
 
-// Add paths that don't require authentication
-const publicPaths = ["/login", "/api/auth/login", "/api/auth/logout"];
-
 export async function middleware(request: NextRequest) {
-    const path = request.nextUrl.pathname;
+    const { pathname } = request.nextUrl;
 
-    // Check if the path is public
-    const isPublicPath = publicPaths.some(p => path.startsWith(p));
-
-    // Skip middleware for static files and public paths
+    // 1. Allow public assets and auth APIs
     if (
-        isPublicPath ||
-        path.includes(".") // Allows favicon.ico, images, fonts, etc.
+        pathname.startsWith("/_next") ||
+        pathname.startsWith("/api/auth") ||
+        pathname.includes(".") ||
+        pathname === "/login"
     ) {
         return NextResponse.next();
     }
 
+    // 2. Protect everything else
     const session = request.cookies.get("session")?.value;
 
     if (!session) {
@@ -32,16 +29,6 @@ export async function middleware(request: NextRequest) {
     }
 }
 
-// See "Matching Paths" below to learn more
 export const config = {
-    matcher: [
-        /*
-         * Match all request paths except for the ones starting with:
-         * - api (API routes)
-         * - _next/static (static files)
-         * - _next/image (image optimization files)
-         * - favicon.ico (favicon file)
-         */
-        "/((?!api/auth|_next/static|_next/image|favicon.ico).*)",
-    ],
+    matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
