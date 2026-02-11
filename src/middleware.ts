@@ -13,9 +13,7 @@ export async function middleware(request: NextRequest) {
     // Skip middleware for static files and public paths
     if (
         isPublicPath ||
-        path.includes(".png") ||
-        path.includes(".jpg") ||
-        path.includes(".svg")
+        path.includes(".") // Allows favicon.ico, images, fonts, etc.
     ) {
         return NextResponse.next();
     }
