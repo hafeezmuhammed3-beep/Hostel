@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+export const dynamic = "force-dynamic";
+
 export async function POST(request: Request) {
     try {
         const body = await request.json();
         const { tenantId, amountPaid, date, month, notes } = body;
 
-        // Fetch tenant to get rent amount
         const tenant = await prisma.tenant.findUnique({
             where: { id: tenantId },
         });
@@ -15,7 +16,6 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Tenant not found' }, { status: 404 });
         }
 
-        // Check if a payment record exists for this month
         let payment = await prisma.payment.findFirst({
             where: {
                 tenantId,
@@ -27,7 +27,6 @@ export async function POST(request: Request) {
         const rentDue = tenant.rentAmount;
 
         if (payment) {
-            // Update existing record
             const newTotalPaid = payment.amountPaid + paidAmount;
             let status = "PARTIAL";
             if (newTotalPaid >= rentDue) {
@@ -39,12 +38,11 @@ export async function POST(request: Request) {
                 data: {
                     amountPaid: newTotalPaid,
                     status,
-                    date: new Date(date), // Update last payment date
+                    date: new Date(date),
                     notes: notes ? `${payment.notes ? payment.notes + '; ' : ''}${notes}` : payment.notes,
                 },
             });
         } else {
-            // Create new record
             let status = "PARTIAL";
             if (paidAmount >= rentDue) {
                 status = "PAID";

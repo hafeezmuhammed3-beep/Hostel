@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
     try {
         const tenants = await prisma.tenant.findMany({
@@ -40,14 +42,11 @@ export async function POST(request: Request) {
                     deposit: parseFloat(deposit),
                     rentAmount: parseFloat(rentAmount),
                     joinDate: new Date(joinDate),
-                    // bedId is not on Tenant, so we don't set it here.
-                    // Relation is managed by updating the Bed.
                 },
             });
 
             // 2. If bed is assigned, update the bed
             if (bedId) {
-                // Check if bed is already occupied (defensive)
                 const bed = await tx.bed.findUnique({ where: { id: bedId } });
                 if (bed && bed.isOccupied) {
                     throw new Error('Selected bed is already occupied');
