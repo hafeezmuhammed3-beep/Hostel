@@ -1,15 +1,7 @@
 import { PrismaClient } from '@prisma/client'
-import { PrismaLibSql } from '@prisma/adapter-libsql'
-import path from 'path'
 
 async function main() {
-    // We need to initialize the adapter like in the main app since we're using Prisma 7 with SQLite
-    const dbPath = path.join(process.cwd(), 'dev.db')
-    const adapter = new PrismaLibSql({
-        url: `file:${dbPath}`
-    })
-
-    const prisma = new PrismaClient({ adapter })
+    const prisma = new PrismaClient()
 
     console.log('Cleaning up existing users...')
     await prisma.user.deleteMany()
@@ -42,4 +34,8 @@ main()
     .catch((e) => {
         console.error(e)
         process.exit(1)
+    })
+    .finally(async () => {
+        // Note: Prisma 7 might not have $disconnect dependening on generator settings, 
+        // but usually it's good practice.
     })
