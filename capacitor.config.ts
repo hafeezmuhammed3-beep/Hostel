@@ -5,9 +5,8 @@ const config: CapacitorConfig = {
   appName: 'Hostel Management',
   webDir: 'cap-build',
   server: {
-    // Connect to your local computer's IP address
-    url: 'http://10.255.144.80:3000',
-    cleartext: true,
+    // Connect to your live Vercel deployment
+    url: 'https://hostel-orpin-tau.vercel.app',
   }
 };
 
