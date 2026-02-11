@@ -9,6 +9,10 @@ export async function POST(request: Request) {
     try {
         const { email, password } = await request.json();
 
+        if (!email || !password) {
+            return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
+        }
+
         const user = await prisma.user.findUnique({
             where: { email },
         });
@@ -44,9 +48,15 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ success: true, user: { name: user.name, role: user.role } });
     } catch (error: any) {
-        console.error("Login error details:", error);
+        // Log the full error to Vercel Logs
+        console.error("CRITICAL LOGIN ERROR:", error);
+
+        // Return a very specific error to the screen
+        const errorMessage = error.message || "Unknown error";
+        const errorType = error.constructor?.name || "Error";
+
         return NextResponse.json(
-            { error: error.message || "Something went wrong" },
+            { error: `Database Error: [${errorType}] ${errorMessage}` },
             { status: 500 }
         );
     }
